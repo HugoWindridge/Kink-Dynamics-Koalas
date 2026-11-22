@@ -31,17 +31,19 @@ f = @(p)(2  * p .* (1 - p.^2));
 F = @(t, p)[p(N+1:end); f(p(1:N)) + lap*p(1:N)];
 
 
+v0 = 0.4; 
+x0 = -5; %move kink left a bit so it has room to move right.
+gamma = 1 / sqrt(1 - v0^2); %Lorentz factor
+
 %this is a stationary solution.
 initcond = zeros(2*N, 1); 
-initcond(1:N) = tanh(xgrid); % phi initial condition of tanh(x), speed dphi/dt = 0 initially (stationary)
+initcond(1:N) = tanh(gamma * (xgrid - x0)); % phi initial condition of tanh(x), speed dphi/dt = 0 initially (stationary)
 %initcond(1:floor(N/2))
 
 %Investigating a moving solution involves giving it an initial velocity.
 
-v0 = 0.7; 
 
-initcond(1:N) = tanh(xgrid); % phi initial condition of tanh(x), speed dphi/dt = 0 initially (stationary)
-initcond(N+1:2*N) = -v0 *  sech((xgrid)).^2;; %Applying an inital velocity in the form of a small bump.
+initcond(N+1:2*N) = -v0 * gamma * sech((gamma * (xgrid - x0))).^2; %Applying an inital velocity in the form of a small bump. 
 
 
 odeparams = odeset('RelTol',1e-10,'AbsTol',1e-10);
@@ -59,8 +61,10 @@ size(phi)
 %hold on
 %plot(xgrid, phi(end, 1:N), ":")
 
+framelen = 5; %Displaying 5 time step updates per frame, crank it to speed up the animation and put it 1 to see every step.
+
 figure;
-for k = 1:1:length(T)
+for k = 1:framelen:length(T)
     plot(xgrid, phi(k, 1:N), 'LineWidth', 2);
     ylim([-1.5 1.5]);
     xlabel('Position x');
