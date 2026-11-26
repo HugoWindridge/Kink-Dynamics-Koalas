@@ -2,7 +2,7 @@
 L = 20;
 
 %Number of grid points.
-N = 250; 
+N = 100; 
 dx = L/(N-1);
 
 % need grid from -L to L
@@ -28,7 +28,9 @@ f = @(p)(2  * p .* (1 - p.^2));
 % 1:N dphi/dt, N+1 : 2N d^2phi/dt
 % this says: d/dt (phi) = dphi/dt (obviously), and
 % d/dt (dphi/dt) = right hand side of eqn
-F = @(t, p)[p(N+1:end); f(p(1:N)) + lap*p(1:N)];
+%F = @(t, p)[p(N+1:end); f(p(1:N)) + lap*p(1:N)];
+%absorbing bc's:
+F = @(t, p)[(p(2) - p(1))/dx; p(N+2:end-1); -(p(N) - p(N-1))/dx; f(p(1:N)) + lap*p(1:N)];
 
 
 v0 = 0.4; 
@@ -45,11 +47,11 @@ initcond(1:N) = tanh(gamma * (xgrid - x0)); % phi initial condition of tanh(x), 
 
 initcond(N+1:2*N) = -v0 * gamma * sech((gamma * (xgrid - x0))).^2; %Applying an inital velocity in the form of a small bump. 
 
-
-odeparams = odeset('RelTol',1e-10,'AbsTol',1e-10);
+size(F(0, initcond))
 
 T = linspace(0,100,1000);
 
+odeparams = odeset('RelTol',1e-10,'AbsTol',1e-10);
 
 %plot(xgrid, initcond(:, 1))
 

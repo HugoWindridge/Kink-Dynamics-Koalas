@@ -15,7 +15,7 @@ xgrid = linspace(-L/2, L/2, N);
 % Construct the Laplacian matrix using finite difference method
 one_vec = ones(N,1);
 lap = spdiags([one_vec, -2*one_vec, one_vec],[1,0,-1],N,N);
-% Von Neumann Boundary Conditions (Carl Neumann?)
+% Von Neumann Boundary Conditions (Carl Neumann?) - Yeah...
 lap(1,1) = -1; lap(N,N) = -1;
 lap = (1/dx^2)*lap;
 
@@ -28,12 +28,14 @@ f = @(p)(2  * p .* (1 - p.^2));
 % 1:N dphi/dt, N+1 : 2N d^2phi/dt
 % this says: d/dt (phi) = dphi/dt (obviously), and
 % d/dt (dphi/dt) = right hand side of eqn
-F = @(t, p)[p(N+1:end); f(p(1:N)) + lap*p(1:N)];
+%F = @(t, p)[p(N+1:end); f(p(1:N)) + lap*p(1:N)];
+%absorbing bc's:
+F = @(t, p)[(p(2) - p(1))/dx; p(N+2:end-1); -(p(N) - p(N-1))/dx; f(p(1:N)) + lap*p(1:N)];
 
 
-Av0 = 0.4; 
+Av0 = 0.1; 
 Ax0 = -5; %move kink left a bit so it has room to move right.
-Bv0 = 0.4;
+Bv0 = 0.1;
 Bx0 = 5;
 Agamma = 1 / sqrt(1 - Av0^2); %Lorentz factor for kink A
 Bgamma = 1 / sqrt(1 - Bv0^2); %Lorentz factor for kink B
@@ -51,7 +53,7 @@ initcond(N+1:2*N) = -Av0 * Agamma * sech((Agamma * (xgrid - Ax0))).^2 -Bv0 * Bga
 
 odeparams = odeset('RelTol',1e-10,'AbsTol',1e-10);
 
-T = linspace(0,100,1000);
+T = linspace(0,300,1000);
 
 
 %plot(xgrid, initcond(:, 1))
